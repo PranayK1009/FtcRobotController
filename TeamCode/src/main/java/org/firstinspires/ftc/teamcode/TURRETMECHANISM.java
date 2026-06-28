@@ -2,21 +2,20 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 public class TURRETMECHANISM {
 
-    private CRServo turretservo1;
-    private CRServo turretservo2;
+    private CRServo rightTurret;
+    private CRServo leftTurret;
 
 
-    // ---------------- PID VALUES ----------------
+    // ---------------- PID VALUES ----------------//
 
-    private double kP = -0.02;
-    private double kD = 0.0002;
+    private double kP = 0.01363;
+    private double kD = 0.00020;
 
     // Desired tx value
     private double goalX = 0;
@@ -39,11 +38,10 @@ public class TURRETMECHANISM {
 
     public void init(HardwareMap hwMap) {
 
-       // turret = hwMap.get(DcMotorEx.class, "turret");
-        turretservo1 = hwMap.get(CRServo.class, "rightTurret");
-        turretservo2 = hwMap.get(CRServo.class, "leftTurret");
+        // turret = hwMap.get(DcMotorEx.class, "turret");
+        rightTurret = hwMap.get(CRServo.class, "rightTurret");
+        leftTurret = hwMap.get(CRServo.class, "leftTurret");
 
-        turretservo1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         timer.reset();
     }
@@ -88,8 +86,8 @@ public class TURRETMECHANISM {
         // ------------------------------------------------
 
         if (!targetFound) {
-            turretservo1.setPower(0);
-            turretservo2.setPower(0);
+            rightTurret.setPower(0);
+            leftTurret.setPower(0);
 
 
             lastError = 0;
@@ -140,11 +138,13 @@ public class TURRETMECHANISM {
         // APPLY POWER
         // ------------------------------------------------
 
-
+        setservos(power);
         lastError = error;
     }
     public void setservos (double power){
-        turretservo1.setPower(power);
-        turretservo2.setPower(power);
+        rightTurret.setPower(power);
+        leftTurret.setPower(power);
     }
+
+
 }

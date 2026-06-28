@@ -13,8 +13,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name = "Test Teleop")
-public class TestTeleop extends OpMode {
+@TeleOp(name = "Teleop")
+public class APOC_TeleOp extends OpMode {
 
     private Limelight3A limelight;
 
@@ -39,12 +39,14 @@ public class TestTeleop extends OpMode {
     private DcMotor backRight;
 
     private double hoodPosition = 0.0;
-    private double shooterPower = 0.5;
+    private double shooterPower = 0.3;
 
     private boolean prevB = false;
     private boolean prevX = false;
     private boolean prevRightBumper = false;
     private boolean prevLeftBumper = false;
+
+    private boolean prevy = true;
 
     @Override
     public void init() {
@@ -88,17 +90,20 @@ public class TestTeleop extends OpMode {
         leftshooter.setDirection(DcMotorSimple.Direction.REVERSE);
         rightshooter.setDirection(DcMotorSimple.Direction.FORWARD);
 
+
         rampLeft = hardwareMap.get(Servo.class, "rampLeft");
         rampRight = hardwareMap.get(Servo.class, "rampRight");
 
-        leftintake.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightintake.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftintake.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightintake.setDirection(DcMotorSimple.Direction.FORWARD);
 
         rampLeft.setDirection(Servo.Direction.FORWARD);
         rampRight.setDirection(Servo.Direction.REVERSE);
 
         rampLeft.setPosition(0);
         rampRight.setPosition(0);
+
+        Hservo.setDirection(Servo.Direction.REVERSE);;;
 
         hoodPosition = 0.0;
         Hservo.setPosition(hoodPosition);
@@ -158,27 +163,32 @@ public class TestTeleop extends OpMode {
         frontRight.setPower((rotY - rotX - rx) / denominator);
         backRight.setPower((rotY + rotX - rx) / denominator);
 
-        //--- TURRET (right stick X) ---
-        double turretPower = gamepad1.right_stick_x;
-        if (Math.abs(turretPower) < 0.05)
-        {turretPower = 0;} // deadzone
-        turret.setservos(turretPower);
 
         // --- RAMP SERVOS ---
         if (gamepad1.y) {
+            prevy = !prevy;
+        }
+
+        if(!prevy){
             rampLeft.setPosition(0.22);
             rampRight.setPosition(0.22);
         }
-        if (gamepad1.a) {
-            rampLeft.setPosition(0);
+        else{
             rampRight.setPosition(0);
+            rampLeft.setPosition(0);
         }
+
+
 
         // --- INTAKE ---
         if (gamepad1.right_trigger > 0.1) {
+            leftintake.setDirection(DcMotorSimple.Direction.FORWARD);
+            rightintake.setDirection(DcMotorSimple.Direction.REVERSE);
             leftintake.setPower(1.0);
             rightintake.setPower(1.0);
-        } else if (-gamepad1.left_trigger > 0.1) {
+        } else if (gamepad1.left_trigger > 0.1) {
+            leftintake.setDirection(DcMotorSimple.Direction.FORWARD);
+            rightintake.setDirection(DcMotorSimple.Direction.REVERSE);
             leftintake.setPower(0.7);
             rightintake.setPower(0.7);
         } else {
@@ -186,27 +196,50 @@ public class TestTeleop extends OpMode {
             rightintake.setPower(0);
         }
 
+
+        if(gamepad1.right_bumper){
+            leftintake.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightintake.setDirection(DcMotorSimple.Direction.FORWARD);
+            leftintake.setPower(0.7);
+            rightintake.setPower(0.7);
+
+        }
+
         // --- HOOD ---
-        if (gamepad1.b && !prevB) {
+        if (gamepad2.b && !prevB) {
             hoodPosition = Math.min(hoodPosition + 0.1, 0.3);
             Hservo.setPosition(hoodPosition);
         }
-        if (gamepad1.x && !prevX) {
+        if (gamepad2.x && !prevX) {
             hoodPosition = Math.max(hoodPosition - 0.1, 0.0);
             Hservo.setPosition(hoodPosition);
         }
 
         // --- SHOOTER ---
-        if (gamepad1.right_bumper && !prevRightBumper) {
-            shooterPower = Math.min(shooterPower + 0.1, 1.0);
+        if (gamepad2.right_bumper && !prevRightBumper) {
+            shooterPower = Math.min(shooterPower + 0.5, 1);
             leftshooter.setPower(shooterPower);
             rightshooter.setPower(shooterPower);
         }
-        if (gamepad1.left_bumper && !prevLeftBumper) {
-            shooterPower = 0;
+        if (gamepad2.left_bumper && !prevLeftBumper) {
+            leftshooter.setPower(0.3);
+            rightshooter.setPower(0.3);
+        }
+
+        if(gamepad2.y){
             leftshooter.setPower(0);
             rightshooter.setPower(0);
         }
+
+        if(gamepad2.dpad_left){
+            liftLeft.setPosition(0.5);
+            liftRight.setPosition(0.5);
+        }
+        if(gamepad2.dpad_right){
+            liftLeft.setPosition(0);
+            liftRight.setPosition(0);
+        }
+
 
         LLResult result =
                 limelight.getLatestResult();
@@ -261,7 +294,6 @@ public class TestTeleop extends OpMode {
                 turret.getkD()
         );
 
-        telemetry.update();
 
 
         // --- DEBOUNCE ---
@@ -282,7 +314,6 @@ public class TestTeleop extends OpMode {
         telemetry.addData("Hood Position", hoodPosition);
 
         telemetry.addLine("=== TURRET ===");
-        telemetry.addData("Turret Power", turretPower);
 
         telemetry.addLine("=== INTAKE ===");
         telemetry.addData("Left Intake", leftintake.getPower());
