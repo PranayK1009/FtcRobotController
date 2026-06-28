@@ -10,8 +10,6 @@ import com.qualcomm.robotcore.util.Range;
 
 public class TURRETMECHANISM {
 
-    private DcMotorEx turret;
-
     private CRServo turretservo1;
     private CRServo turretservo2;
 
@@ -45,7 +43,7 @@ public class TURRETMECHANISM {
        // turret = hwMap.get(DcMotorEx.class, "turret");
         turretservo1 = hwMap.get(CRServo.class, "rightTurret");
         turretservo2 = hwMap.get(CRServo.class, "leftTurret");
-        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         turretservo1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         timer.reset();
@@ -91,8 +89,9 @@ public class TURRETMECHANISM {
         // ------------------------------------------------
 
         if (!targetFound) {
+            turretservo1.setPower(0);
+            turretservo2.setPower(0);
 
-            turret.setPower(0);
 
             lastError = 0;
 
